@@ -2,6 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>Papau.Cqrs</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Philipp Grathwohl</Authors>
+    <Company>papau.org</Company>
   </PropertyGroup>
 
 </Project>
