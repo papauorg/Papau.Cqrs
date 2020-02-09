@@ -15,6 +15,8 @@ jobs:
         dotnet-version: 3.1.100
     - name: Build with dotnet
       run: dotnet build --configuration Release
+    - name: Run tests
+      run: dotnet test --configuration Release --no-build
 #    - name: Publish Cqrs Package to nuget
 #      run: dotnet nuget push src/Papau.Cqrs/bin/Release/Papau.Cqrs.*.nupkg -s https://api.nuget.org/v3/index.json
 #    - name: Publish Cqrs.Masstransit Package to nuget
