@@ -1,0 +1,21 @@
+name: .NET Core
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.100
+    - name: Build with dotnet
+      run: dotnet build --configuration Release
+#    - name: Publish Cqrs Package to nuget
+#      run: dotnet nuget push src/Papau.Cqrs/bin/Release/Papau.Cqrs.*.nupkg -s https://api.nuget.org/v3/index.json
+#    - name: Publish Cqrs.Masstransit Package to nuget
+#      run: dotnet nuget push src/Papau.Cqrs.Masstransit/bin/Release/Papau.Cqrs.Masstransit.*.nupkg -s https://api.nuget.org/v3/index.json 
