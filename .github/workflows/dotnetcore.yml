@@ -17,7 +17,7 @@ jobs:
       run: dotnet build --configuration Release
     - name: Run tests
       run: dotnet test --configuration Release --no-build
-#    - name: Publish Cqrs Package to nuget
-#      run: dotnet nuget push src/Papau.Cqrs/bin/Release/Papau.Cqrs.*.nupkg -s https://api.nuget.org/v3/index.json
-#    - name: Publish Cqrs.Masstransit Package to nuget
-#      run: dotnet nuget push src/Papau.Cqrs.Masstransit/bin/Release/Papau.Cqrs.Masstransit.*.nupkg -s https://api.nuget.org/v3/index.json 
+    - name: Publish Cqrs Package to nuget
+      run: dotnet nuget push src/Papau.Cqrs/bin/Release/Papau.Cqrs.*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
+    - name: Publish Cqrs.Masstransit Package to nuget
+      run: dotnet nuget push src/Papau.Cqrs.Masstransit/bin/Release/Papau.Cqrs.Masstransit.*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json 
