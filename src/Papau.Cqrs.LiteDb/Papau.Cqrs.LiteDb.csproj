@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>Papau.Cqrs.LiteDb</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Philipp Grathwohl</Authors>
+    <Company>papau.org</Company>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LiteDb" Version="5.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Papau.Cqrs\Papau.Cqrs.csproj" />
+  </ItemGroup>
+   
+</Project>
