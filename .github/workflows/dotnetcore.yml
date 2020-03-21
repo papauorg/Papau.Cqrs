@@ -40,7 +40,7 @@ jobs:
     - name: Run tests
       run: dotnet test --configuration Release --no-build -p:Version=${{steps.gitversion.outputs.semVer}}
     - name: Pack nuget package
-      run: dotnet pack --configuration Release --no-build -p:Version${{steps.gitversion.outputs.semVer}} --output ./output
+      run: dotnet pack --configuration Release --no-build -p:Version=${{steps.gitversion.outputs.semVer}} --output ./output
     - name: Publish Packages to nuget
       if: github.event_name == 'push'
       run: dotnet nuget push output/Papau.Cqrs.*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json 
