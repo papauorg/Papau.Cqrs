@@ -1,6 +1,6 @@
-continuous-delivery-fallback-tag: ''
+mode: Mainline
 branches:
-  master:
-    regex: ^master
-    mode: ContinuousDeployment
-    tag: ''
+  master: {}
+ignore:
+  sha: []
+merge-message-formats: {}
