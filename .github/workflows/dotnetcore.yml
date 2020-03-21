@@ -1,6 +1,12 @@
-name: .NET Core
+name: Build And Release
 
-on: [push]
+on: 
+  push:
+    branches:
+      - master
+  pull_request:
+    branches: 
+      - master
 
 jobs:
   build:
@@ -32,8 +38,9 @@ jobs:
     - name: Build with dotnet
       run: dotnet build --configuration Release -p:Version=${{steps.gitversion.outputs.semVer}}
     - name: Run tests
-      run: dotnet test --configuration Release --no-build
-    - name: Publish Cqrs Package to nuget
-      run: dotnet nuget push src/Papau.Cqrs/bin/Release/Papau.Cqrs.*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
-    - name: Publish Cqrs.Masstransit Package to nuget
-      run: dotnet nuget push src/Papau.Cqrs.Masstransit/bin/Release/Papau.Cqrs.Masstransit.*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json 
+      run: dotnet test --configuration Release --no-build -p:Version=${{steps.gitversion.outputs.semVer}}
+    - name: Pack nuget package
+      run: dotnet pack --configuration Release --no-build -p:Version${{steps.gitversion.outputs.semVer}} --output ./output
+    - name: Publish Packages to nuget
+      if: github.event_name == 'push'
+      run: dotnet nuget push output/Papau.Cqrs.*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json 
