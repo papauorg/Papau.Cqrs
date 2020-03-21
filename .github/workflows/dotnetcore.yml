@@ -16,6 +16,15 @@ jobs:
         git config remote.origin.url https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
         git fetch --prune --unshallow
 
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v0.9
+      with:
+          versionSpec: '5.1.x'
+    
+    - name: Use GitVersion
+      id: gitversion # step id used as reference for output values
+      uses: gittools/actions/gitversion/execute@v0.9
+
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
