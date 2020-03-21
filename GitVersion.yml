@@ -2,3 +2,5 @@ branches:
   master:
     regex: ^master
     mode: ContinuousDeployment
+    continuous-delivery-fallback-tag: ''
+    tag: ''
