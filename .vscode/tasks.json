@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/tests/Papau.Cqrs.Tests/Papau.Cqrs.Tests.csproj",
+                "${workspaceFolder}/Papau.Cqrs.sln",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
