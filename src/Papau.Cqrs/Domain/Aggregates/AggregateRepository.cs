@@ -29,7 +29,7 @@ namespace Papau.Cqrs.Domain.Aggregates
             return Task.FromResult(result);
         }
 
-        protected async Task<IEnumerable<IEvent>> CommitAndPublish(string aggregateId, IEnumerable<IEvent> existingEvents, TAggregate aggregate)
+        protected async Task<IEnumerable<IEvent>> CommitAndPublish(string aggregateId, IEnumerable<IEvent> existingEvents, AggregateRoot aggregate)
         {
             var uncommittedEvents = aggregate.GetUncommittedChanges();
             var versionBeforeChanges = aggregate.Version - uncommittedEvents.Count();
@@ -52,7 +52,17 @@ namespace Papau.Cqrs.Domain.Aggregates
             }
         }
 
-        public abstract Task Save(AggregateRoot aggregateRoot, string aggregateId);
+        public async Task Save(TAggregate aggregateRoot)
+        {
+            await SaveInternal(aggregateRoot);
+        }
+
+        public async Task Save(AggregateRoot aggregateRoot)
+        {
+            await SaveInternal(aggregateRoot);
+        }
+
+        protected abstract Task SaveInternal(AggregateRoot aggregateRoot);
 
         public abstract Task<IEnumerable<IEvent>> GetAllEvents();
         
