@@ -41,8 +41,9 @@ namespace Papau.Cqrs.LiteDb.Domain.Aggregates
             return BuildFromHistory(aggregateType, aggregateId, typedEvents);
         }
 
-        public override Task Save(AggregateRoot aggregateRoot, string aggregateId)
+        protected override Task SaveInternal(AggregateRoot aggregateRoot)
         {
+            var aggregateId = aggregateRoot.GetId();
             var uncommittedEvents = aggregateRoot.GetUncommittedChanges();
             var eventsToSave = uncommittedEvents
                 .Select(e => {

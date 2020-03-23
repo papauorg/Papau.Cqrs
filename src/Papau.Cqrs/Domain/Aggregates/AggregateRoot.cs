@@ -62,5 +62,7 @@ namespace Papau.Cqrs.Domain.Aggregates
         {
             _changes.Clear();
         }
+
+        public abstract string GetId();
     }
 }
