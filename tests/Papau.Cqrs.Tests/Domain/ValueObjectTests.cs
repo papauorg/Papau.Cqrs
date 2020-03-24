@@ -2,7 +2,7 @@ using FluentAssertions;
 using Xunit;
 using Papau.Cqrs.Domain;
 
-namespace Papau.Parawaiting.Tests.Unit.Domain
+namespace Papau.Cqrs.Tests.Unit.Domain
 {
     public class ValueObjectTests
     {
