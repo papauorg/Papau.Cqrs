@@ -54,7 +54,7 @@ namespace Papau.Cqrs.LiteDb.Domain.Aggregates
                         doc["_EventId"] = doc["_id"];
                         doc.Remove("_id"); // always use autoid to keep order
                     }
-                    doc["_EventType"] = e.GetType().FullName;
+                    doc["_EventType"] = e.GetType().AssemblyQualifiedName;
                     doc["_AggregateId"] = aggregateId;
                     return doc;
                 })
@@ -77,11 +77,16 @@ namespace Papau.Cqrs.LiteDb.Domain.Aggregates
         private IEnumerable<IEvent> Deserialize(IEnumerable<BsonDocument> documents)
         {
             return documents.Select(e => {
-                var type = Type.GetType(e["_EventType"].AsString);
+                var type = ResolveType(e["_EventType"].AsString);
                 if (e.ContainsKey("_EventId"))
                     e["_id"] = e["_EventId"]; // fix id serialization hack
                 return (IEvent)LiteDb.Mapper.ToObject(type, e);
             });
+        }
+
+        protected virtual Type ResolveType(string typeName)
+        {
+            return Type.GetType(typeName, throwOnError: true, ignoreCase: true);
         }
     }
 }

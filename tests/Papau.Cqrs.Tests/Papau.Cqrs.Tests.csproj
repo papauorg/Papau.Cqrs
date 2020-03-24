@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Papau.Cqrs\Papau.Cqrs.csproj" />
     <ProjectReference Include="..\..\src\Papau.Cqrs.Masstransit\Papau.Cqrs.Masstransit.csproj" />
+    <ProjectReference Include="..\..\src\Papau.Cqrs.LiteDb\Papau.Cqrs.LiteDb.csproj" />
   </ItemGroup>
 
 </Project>
