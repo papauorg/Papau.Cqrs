@@ -29,6 +29,12 @@ namespace Papau.Cqrs.Domain.Aggregates
             return Task.FromResult(result);
         }
 
+        protected Task ApplyChangesToAggregate(AggregateRoot aggregateRoot, IEnumerable<IEvent> eventsToApply)
+        {
+            aggregateRoot.ApplyChanges(eventsToApply);
+            return Task.CompletedTask;
+        }
+
         protected async Task<IEnumerable<IEvent>> CommitAndPublish(string aggregateId, IEnumerable<IEvent> existingEvents, AggregateRoot aggregate)
         {
             var uncommittedEvents = aggregate.GetUncommittedChanges();
