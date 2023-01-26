@@ -7,9 +7,9 @@ namespace Papau.Cqrs.Domain.Aggregates
     public interface IAggregateFactory
     {
         /// Create and load with the given eventdata
-        AggregateRoot CreateAggregate(Type aggregateType);
+        IAggregateRoot CreateAggregate(Type aggregateType);
 
         /// Apply additional events to the aggregate
-        TAggregate CreateAggregate<TAggregate>() where TAggregate : AggregateRoot;
+        TAggregate CreateAggregate<TAggregate>() where TAggregate : IAggregateRoot;
     }
 }

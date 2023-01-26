@@ -6,9 +6,9 @@ namespace Papau.Cqrs.Domain.Aggregates
 {
     public interface IAggregateRepository
     {
-        Task Save(AggregateRoot aggregateRoot);
+        Task Save(IAggregateRoot aggregateRoot);
 
-        Task<AggregateRoot> GetById(Type aggregateType, string aggregateId);
+        Task<IAggregateRoot> GetById(Type aggregateType, IAggregateId aggregateId);
 
         Task<IEnumerable<IEvent>> GetAllEvents();
     }

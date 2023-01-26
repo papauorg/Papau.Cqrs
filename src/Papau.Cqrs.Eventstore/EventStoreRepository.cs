@@ -9,7 +9,7 @@ using Papau.Cqrs.Domain.Aggregates;
 namespace Papau.Cqrs.EventStore
 {
     public class EventStoreRepository<TAggregate> 
-        : AggregateRepository<TAggregate> where TAggregate : AggregateRoot
+        : AggregateRepository<TAggregate> where TAggregate : IAggregateRoot
     {
         public const int READ_PAGE_SIZE = 50;
         public const string AGGREGATE_CLR_TYPE_HEADER = "AggregateClrType";
@@ -29,7 +29,7 @@ namespace Papau.Cqrs.EventStore
             EventSerializer = eventSerializer ?? throw new ArgumentNullException(nameof(eventSerializer));
         }
 
-        protected async Task<IReadOnlyList<IEvent>> Save(AggregateRoot aggregate, string streamName, Action<IDictionary<string, object>> updateHeaders)
+        protected async Task<IReadOnlyList<IEvent>> Save(IAggregateRoot aggregate, string streamName, Action<IDictionary<string, object>> updateHeaders)
         {
             var commitHeaders = new Dictionary<string, object>
             {
@@ -50,27 +50,27 @@ namespace Papau.Cqrs.EventStore
             return newEvents;
         }
 
-        protected async Task<TAggregate> GetById(string streamName, int version)
+        protected async Task<TAggregate> GetById(IAggregateId streamName, int version)
         {
             if (version <= 0)
                 throw new InvalidOperationException("Cannot get version <= 0");
 
             long sliceStart = StreamPosition.Start;
             StreamEventsSlice currentSlice;
-            AggregateRoot aggregate = null;
+            IAggregateRoot aggregate = null;
             do
             {
                 var sliceCount = sliceStart + READ_PAGE_SIZE <= version
                                     ? READ_PAGE_SIZE
                                     : (int)(version - sliceStart + 1);
 
-                currentSlice = await EventStoreConnection.ReadStreamEventsForwardAsync(streamName, sliceStart, sliceCount, false);
+                currentSlice = await EventStoreConnection.ReadStreamEventsForwardAsync(streamName.ToString(), sliceStart, sliceCount, false);
 
                 if (currentSlice.Status == SliceReadStatus.StreamNotFound)
-                    throw new AggregateNotFoundException(streamName, typeof(TAggregate));
+                    throw new AggregateNotFoundException(streamName.ToString(), typeof(TAggregate));
 
                 if (currentSlice.Status == SliceReadStatus.StreamDeleted)
-                    throw new AggregateDeletedException(streamName, typeof(TAggregate));
+                    throw new AggregateDeletedException(streamName.ToString(), typeof(TAggregate));
 
                 sliceStart = currentSlice.NextEventNumber;
 
@@ -83,15 +83,15 @@ namespace Papau.Cqrs.EventStore
             } while (version >= currentSlice.NextEventNumber && !currentSlice.IsEndOfStream);
 
             if (version < Int32.MaxValue && aggregate.Version != version)
-                throw new AggregateVersionException(streamName, typeof(TAggregate), aggregate.Version, version);                
+                throw new AggregateVersionException(streamName.ToString(), typeof(TAggregate), aggregate.Version, version);                
 
             return (TAggregate)aggregate;
         }
 
-        protected override async Task SaveInternal(AggregateRoot aggregateRoot)
+        protected override async Task SaveInternal(IAggregateRoot aggregateRoot)
         {
-            var streamName = aggregateRoot.GetId();
-            var events = await Save(aggregateRoot, streamName, null);
+            var streamName = aggregateRoot.Id;
+            var events = await Save(aggregateRoot, streamName.ToString(), null);
             await PublishEndpoint.Publish(events);
         }
 
@@ -100,7 +100,7 @@ namespace Papau.Cqrs.EventStore
             throw new NotSupportedException();
         }
 
-        public override async Task<AggregateRoot> GetById(Type aggregateType, string aggregateId)
+        public override async Task<IAggregateRoot> GetById(Type aggregateType, IAggregateId aggregateId)
         {
             return await GetById(aggregateId, int.MaxValue);
         }

@@ -3,12 +3,11 @@ using Papau.Cqrs.Domain.Aggregates;
 
 namespace Papau.Cqrs.Tests.Data.LiteDbRepository
 {
-    public class LiteDbTestAggregate : AggregateRoot
+    public class LiteDbTestAggregate : AggregateRoot<TestId>
     {
-        public Guid Id {get; private set;}
         public string SampleProperty { get; private set; }
 
-        public LiteDbTestAggregate()
+        public LiteDbTestAggregate() : base(new TestId(Guid.NewGuid()))
         {
             Handle<ILiteDbSampleEvent>(SampleEventHandler);
         }
@@ -25,11 +24,6 @@ namespace Papau.Cqrs.Tests.Data.LiteDbRepository
         {
             Id = sampleEvent.Id;
             SampleProperty = sampleEvent.SomeProp;
-        }
-
-        public override string GetId()
-        {
-            return $"LdbAgg-{Id}";
         }
     }
 }

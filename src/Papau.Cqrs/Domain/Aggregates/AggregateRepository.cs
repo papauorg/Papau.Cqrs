@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Papau.Cqrs.Domain.Aggregates
 {
     public abstract class AggregateRepository<TAggregate> 
-        : IAggregateRepository, IAggregateRepository<TAggregate> where TAggregate : AggregateRoot
+        : IAggregateRepository, IAggregateRepository<TAggregate> where TAggregate : IAggregateRoot
     {
         public IAggregateFactory AggregateFactory { get; }
         public IEventPublisher PublishEndpoint { get; }
@@ -17,7 +17,7 @@ namespace Papau.Cqrs.Domain.Aggregates
             PublishEndpoint = publishEndpoint ?? throw new System.ArgumentNullException(nameof(publishEndpoint));
         }
 
-        protected Task<AggregateRoot> BuildFromHistory(Type aggregateType, string aggregateId, IEnumerable<IEvent> history)
+        protected Task<IAggregateRoot> BuildFromHistory(Type aggregateType, string aggregateId, IEnumerable<IEvent> history)
         {
             if (history == null || !history.Any())
                 throw new AggregateNotFoundException(aggregateId, typeof(TAggregate));
@@ -29,13 +29,13 @@ namespace Papau.Cqrs.Domain.Aggregates
             return Task.FromResult(result);
         }
 
-        protected Task ApplyChangesToAggregate(AggregateRoot aggregateRoot, IEnumerable<IEvent> eventsToApply)
+        protected Task ApplyChangesToAggregate(IAggregateRoot aggregateRoot, IEnumerable<IEvent> eventsToApply)
         {
             aggregateRoot.ApplyChanges(eventsToApply);
             return Task.CompletedTask;
         }
 
-        protected async Task<IEnumerable<IEvent>> CommitAndPublish(string aggregateId, IEnumerable<IEvent> existingEvents, AggregateRoot aggregate)
+        protected async Task<IEnumerable<IEvent>> CommitAndPublish(string aggregateId, IEnumerable<IEvent> existingEvents, IAggregateRoot aggregate)
         {
             var uncommittedEvents = aggregate.GetUncommittedChanges();
             var versionBeforeChanges = aggregate.Version - uncommittedEvents.Count();
@@ -63,18 +63,18 @@ namespace Papau.Cqrs.Domain.Aggregates
             await SaveInternal(aggregateRoot);
         }
 
-        public async Task Save(AggregateRoot aggregateRoot)
+        public async Task Save(IAggregateRoot aggregateRoot)
         {
             await SaveInternal(aggregateRoot);
         }
 
-        protected abstract Task SaveInternal(AggregateRoot aggregateRoot);
+        protected abstract Task SaveInternal(IAggregateRoot aggregateRoot);
 
         public abstract Task<IEnumerable<IEvent>> GetAllEvents();
         
-        public abstract Task<AggregateRoot> GetById(Type aggregateType, string aggregateId);
+        public abstract Task<IAggregateRoot> GetById(Type aggregateType, IAggregateId aggregateId);
 
-        public async Task<TAggregate> GetById(string aggregateId)
+        public async Task<TAggregate> GetById(IAggregateId aggregateId)
         {
             return (TAggregate)(await GetById(typeof(TAggregate), aggregateId));
         }

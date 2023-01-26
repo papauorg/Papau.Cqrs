@@ -38,7 +38,7 @@ namespace Papau.Cqrs.Tests.Data.LiteDbRepository
             var events = collection.FindAll();
             events.Should().HaveCount(1);
 
-            var readSample = await _repo.GetById(sample.GetId());
+            var readSample = await _repo.GetById(sample.Id);
             readSample.Id.Should().Be(sample.Id);
             readSample.SampleProperty.Should().Be(sample.SampleProperty);
         }

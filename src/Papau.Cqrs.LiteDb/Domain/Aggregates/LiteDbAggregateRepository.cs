@@ -9,7 +9,7 @@ using Papau.Cqrs.Domain.Aggregates;
 namespace Papau.Cqrs.LiteDb.Domain.Aggregates
 {
     public class LiteDbAggregateRepository<TAggregate>
-        : AggregateRepository<TAggregate> where TAggregate : AggregateRoot
+        : AggregateRepository<TAggregate> where TAggregate : IAggregateRoot
     {
         public ILiteDatabase LiteDb { get; }
         
@@ -29,21 +29,21 @@ namespace Papau.Cqrs.LiteDb.Domain.Aggregates
             return Task.FromResult(Deserialize(allEvents));
         }
 
-        public override Task<AggregateRoot> GetById(Type aggregateType, string aggregateId)
+        public override Task<IAggregateRoot> GetById(Type aggregateType, IAggregateId aggregateId)
         {
             var result = new List<IEvent>();
 
             var eventCollection = LiteDb.GetCollection("AllEvents");
-            var aggregateEvents = eventCollection.Find(Query.EQ("_AggregateId", aggregateId));
+            var aggregateEvents = eventCollection.Find(Query.EQ("_AggregateId", aggregateId.ToString()));
             
             var typedEvents = Deserialize(aggregateEvents);
 
-            return BuildFromHistory(aggregateType, aggregateId, typedEvents);
+            return BuildFromHistory(aggregateType, aggregateId.ToString(), typedEvents);
         }
 
-        protected override Task SaveInternal(AggregateRoot aggregateRoot)
+        protected override Task SaveInternal(IAggregateRoot aggregateRoot)
         {
-            var aggregateId = aggregateRoot.GetId();
+            var aggregateId = aggregateRoot.Id.ToString();
             var uncommittedEvents = aggregateRoot.GetUncommittedChanges();
             var eventsToSave = uncommittedEvents
                 .Select(e => {
