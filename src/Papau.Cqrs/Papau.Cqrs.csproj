@@ -8,6 +8,8 @@
     <Version>0.1.0</Version>
     <Authors>Philipp Grathwohl</Authors>
     <Company>papau.org</Company>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
 </Project>

@@ -5,7 +5,7 @@ namespace Papau.Cqrs.Tests.Data.LiteDbRepository
 {
     public interface ILiteDbSampleEvent : IEvent
     {
-        Guid Id { get; }
+        TestId Id { get; }
         string SomeProp { get; }
     }
 }

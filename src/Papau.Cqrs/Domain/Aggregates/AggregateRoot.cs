@@ -7,17 +7,21 @@ namespace Papau.Cqrs.Domain.Aggregates
     /// <summary>
     /// Aggregate root base class
     /// </summary>
-    public abstract class AggregateRoot
+    public abstract class AggregateRoot<TId> : IAggregateRoot where TId : IAggregateId 
     {
         private List<IEvent> _changes;
         private Dictionary<Type, Action<IEvent>> _eventConsumerMethods;
         public int Version { get; private set; }
+        public TId Id { get; protected set; }
 
-        public AggregateRoot()
+        IAggregateId IAggregateRoot.Id => this.Id;
+
+        public AggregateRoot(TId id)
         {
             _changes = new List<IEvent>();
             _eventConsumerMethods = new Dictionary<Type, Action<IEvent>>();
             Version = 0;
+            Id = id;
         }
 
         protected void Handle<TEvent>(Action<TEvent> handler) where TEvent : IEvent
@@ -28,7 +32,7 @@ namespace Papau.Cqrs.Domain.Aggregates
             _eventConsumerMethods.Add(typeof(TEvent), e => handler((TEvent) e));
         }
 
-        protected internal void ApplyChanges(IEnumerable<IEvent> events)
+        public void ApplyChanges(IEnumerable<IEvent> events)
         {
             foreach(var @event in events)
             {
@@ -62,7 +66,5 @@ namespace Papau.Cqrs.Domain.Aggregates
         {
             _changes.Clear();
         }
-
-        public abstract string GetId();
     }
 }
