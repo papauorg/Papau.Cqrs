@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="LiteDb" Version="5.0.4" />
+    <PackageReference Include="LiteDb" Version="5.0.15" />
   </ItemGroup>
 
   <ItemGroup>
