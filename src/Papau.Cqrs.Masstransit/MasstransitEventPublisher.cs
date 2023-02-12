@@ -13,7 +13,7 @@ public class MasstransitEventPublisher : IEventPublisher
 
     public MasstransitEventPublisher(IPublishEndpoint endpoint)
     {
-        this.Endpoint = endpoint ?? throw new System.ArgumentNullException(nameof(endpoint));
+        Endpoint = endpoint ?? throw new System.ArgumentNullException(nameof(endpoint));
     }
 
     public async Task Publish(IEvent eventToPublish)
