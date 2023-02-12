@@ -1,9 +1,8 @@
-namespace Papau.Cqrs.Domain
+namespace Papau.Cqrs.Domain;
+
+/// <summary>
+/// Defines an event
+/// </summary>
+public interface IEvent
 {
-    /// <summary>
-    /// Defines an event
-    /// </summary>
-    public interface IEvent
-    {
-    }
 }
