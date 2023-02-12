@@ -21,24 +21,14 @@ namespace Papau.Cqrs.LiteDb.Domain.Aggregates
             LiteDb = liteDb ?? throw new System.ArgumentNullException(nameof(liteDb));
         }
 
-        public override Task<IEnumerable<IEvent>> GetAllEvents()
+        public override async Task<IAggregateRoot> GetById(Type aggregateType, IAggregateId aggregateId)
         {
-            var eventCollection = LiteDb.GetCollection("AllEvents");
-            var allEvents = eventCollection.FindAll();
-            
-            return Task.FromResult(Deserialize(allEvents));
-        }
-
-        public override Task<IAggregateRoot> GetById(Type aggregateType, IAggregateId aggregateId)
-        {
-            var result = new List<IEvent>();
-
             var eventCollection = LiteDb.GetCollection("AllEvents");
             var aggregateEvents = eventCollection.Find(Query.EQ("_AggregateId", aggregateId.ToString()));
             
             var typedEvents = Deserialize(aggregateEvents);
 
-            return BuildFromHistory(aggregateType, aggregateId.ToString(), typedEvents);
+            return await BuildFromHistory(aggregateType, aggregateId, typedEvents, int.MaxValue).ConfigureAwait(false);
         }
 
         protected override Task SaveInternal(IAggregateRoot aggregateRoot)
@@ -74,14 +64,17 @@ namespace Papau.Cqrs.LiteDb.Domain.Aggregates
             return Task.CompletedTask;
         }
 
-        private IEnumerable<IEvent> Deserialize(IEnumerable<BsonDocument> documents)
+        private async IAsyncEnumerable<IEvent> Deserialize(IEnumerable<BsonDocument> documents)
         {
-            return documents.Select(e => {
+            var events = documents.Select(e => {
                 var type = ResolveType(e["_EventType"].AsString);
                 if (e.ContainsKey("_EventId"))
                     e["_id"] = e["_EventId"]; // fix id serialization hack
                 return (IEvent)LiteDb.Mapper.ToObject(type, e);
             });
+
+            foreach (var e in events)
+                yield return await Task.FromResult(e);
         }
 
         protected virtual Type ResolveType(string typeName)

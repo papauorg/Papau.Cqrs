@@ -16,14 +16,14 @@ namespace Papau.Cqrs.Masstransit
 
         public async Task Publish(IEvent eventToPublish)
         {
-            await Endpoint.Publish(eventToPublish, eventToPublish.GetType());
+            await Endpoint.Publish(eventToPublish, eventToPublish.GetType()).ConfigureAwait(false);
         }
 
         public async Task Publish(IEnumerable<IEvent> eventsToPublish)
         {
             foreach(var ev in eventsToPublish)
             {
-                await Publish(ev);
+                await Publish(ev).ConfigureAwait(false);
             }
         }
     }

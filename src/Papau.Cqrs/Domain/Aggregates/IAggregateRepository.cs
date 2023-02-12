@@ -9,7 +9,5 @@ namespace Papau.Cqrs.Domain.Aggregates
         Task Save(IAggregateRoot aggregateRoot);
 
         Task<IAggregateRoot> GetById(Type aggregateType, IAggregateId aggregateId);
-
-        Task<IEnumerable<IEvent>> GetAllEvents();
     }
 }

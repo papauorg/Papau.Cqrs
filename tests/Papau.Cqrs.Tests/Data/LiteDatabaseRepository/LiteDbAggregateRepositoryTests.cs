@@ -11,8 +11,8 @@ namespace Papau.Cqrs.Tests.Data.LiteDbRepository
 {
     public class LiteDbAggregateRepositoryTests
     {
-        LiteDbAggregateRepository<LiteDbTestAggregate> _repo;
-        LiteDB.LiteDatabase _liteDb;
+        readonly LiteDbAggregateRepository<LiteDbTestAggregate> _repo;
+        readonly LiteDB.LiteDatabase _liteDb;
 
         public LiteDbAggregateRepositoryTests()
         {

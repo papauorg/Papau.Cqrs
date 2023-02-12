@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using EventStore.ClientAPI;
+using EventStore.Client;
 using Newtonsoft.Json;
+
 using Papau.Cqrs.Domain;
 
 namespace Papau.Cqrs.EventStore
@@ -29,21 +30,20 @@ namespace Papau.Cqrs.EventStore
             var metadata = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(eventHeaders, SerializerSettings));
             var typeName = @event.GetType().Name;
 
-            return new EventData(Guid.NewGuid(), typeName, true, data, metadata);
+            return new EventData(Uuid.NewUuid(), typeName, data, metadata);
         }
 
-        public IEvent DeserializeEvent(RecordedEvent rawEvent)
+        public IEvent DeserializeEvent(EventRecord rawEvent)
         {
             try
             {
-                var headerString = Encoding.UTF8.GetString(rawEvent.Metadata);
+                var headerString = Encoding.UTF8.GetString(rawEvent.Metadata.Span);
                 var headers = JsonConvert.DeserializeObject<Dictionary<string, object>>(headerString);
 
                 var typeName = headers[EVENT_CLR_TYPE_HEADER].ToString();
-                var eventString = Encoding.UTF8.GetString(rawEvent.Data);
-                var @event = JsonConvert.DeserializeObject(eventString, Type.GetType(typeName)) as IEvent;
+                var eventString = Encoding.UTF8.GetString(rawEvent.Data.Span);
 
-                if (@event == null)
+                if (JsonConvert.DeserializeObject(eventString, Type.GetType(typeName)) is not IEvent @event)
                     throw new InvalidOperationException("Event is not of type IEvent");
 
                 return @event;
