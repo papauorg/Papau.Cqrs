@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using Microsoft.Extensions.Logging;
 
 namespace Papau.Cqrs.Domain.ReadModels;
@@ -24,7 +25,7 @@ public class ReadModelBus : IReadModelBus
             {
                 await subscriber.Handle(e).ConfigureAwait(false);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Logger.LogWarning(ex, "Subscriber {subscriberType} couldn't handle event {@event}", subscriber.GetType().Name, e);
             }

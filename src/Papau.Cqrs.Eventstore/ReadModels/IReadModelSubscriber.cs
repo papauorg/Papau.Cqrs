@@ -1,9 +1,8 @@
 using System.Threading.Tasks;
 
-namespace Papau.Cqrs.Domain.ReadModels
+namespace Papau.Cqrs.Domain.ReadModels;
+
+public interface IReadModelSubscriber
 {
-    public interface IReadModelSubscriber
-    {
-        Task Handle(IEvent e);
-    }
+    Task Handle(IEvent e);
 }

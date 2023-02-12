@@ -1,11 +1,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Papau.Cqrs.Domain
+namespace Papau.Cqrs.Domain;
+
+public interface IEventPublisher
 {
-    public interface IEventPublisher
-    {
-        Task Publish(IEvent eventToPublish);
-        Task Publish(IEnumerable<IEvent> eventsToPublish);
-    }
+    Task Publish(IEvent eventToPublish);
+    Task Publish(IEnumerable<IEvent> eventsToPublish);
 }

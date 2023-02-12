@@ -1,9 +1,8 @@
-namespace Papau.Cqrs.Domain
+namespace Papau.Cqrs.Domain;
+
+/// <summary>
+/// Defines a command
+/// </summary>
+public interface ICommand
 {
-    /// <summary>
-    /// Defines a command
-    /// </summary>
-    public interface ICommand
-    {
-    }
 }
