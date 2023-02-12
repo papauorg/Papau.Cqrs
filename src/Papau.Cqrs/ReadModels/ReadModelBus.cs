@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
-namespace Papau.Cqrs.Domain.ReadModels;
+using Papau.Cqrs.Domain;
+
+namespace Papau.Cqrs.ReadModels;
 
 public class ReadModelBus : IReadModelBus
 {
@@ -17,13 +20,14 @@ public class ReadModelBus : IReadModelBus
         Logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task Publish(IEvent e)
+    public async Task Publish(IEvent e, CancellationToken cancellationToken)
     {
         foreach (var subscriber in Subscribers)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                await subscriber.Handle(e).ConfigureAwait(false);
+                await subscriber.Handle(e, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

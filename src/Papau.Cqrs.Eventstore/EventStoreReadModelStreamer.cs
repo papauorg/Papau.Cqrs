@@ -3,14 +3,13 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using EventStore.Client;
-
 using Microsoft.Extensions.Logging;
-
-using Papau.Cqrs.Domain.ReadModels;
+using Papau.Cqrs.ReadModels;
 
 namespace Papau.Cqrs.EventStore;
 
-// inspired by: https://github.dev/EventStore/samples/tree/main/CQRS_Flow/.NET 
+/// Class for subscribing to all eventstore events to be able to stream it to the
+/// readmodel bus to rebuild the models.
 public sealed class EventStoreReadmodelStreamer
 {
     private static class NoSynchronizationContextScope
@@ -24,15 +23,18 @@ public sealed class EventStoreReadmodelStreamer
 
         public readonly struct Disposable : IDisposable
         {
-            private readonly SynchronizationContext? synchronizationContext;
+            #nullable enable
+
+            private readonly SynchronizationContext? _synchronizationContext;
 
             public Disposable(SynchronizationContext? synchronizationContext)
             {
-                this.synchronizationContext = synchronizationContext;
+                _synchronizationContext = synchronizationContext;
             }
 
             public void Dispose() =>
-                SynchronizationContext.SetSynchronizationContext(synchronizationContext);
+                SynchronizationContext.SetSynchronizationContext(_synchronizationContext);
+            #nullable restore
         }
     }
 
@@ -42,7 +44,7 @@ public sealed class EventStoreReadmodelStreamer
     public ILogger<EventStoreReadmodelStreamer> Logger { get; }
     public CancellationToken CancellationToken { get; private set; }
 
-    private readonly object resubscribeLock = new();
+    private readonly object _resubscribeLock = new();
 
     public EventStoreReadmodelStreamer(
         EventStoreClient eventStoreClient,
@@ -130,7 +132,7 @@ public sealed class EventStoreReadmodelStreamer
             var resubscribed = false;
             try
             {
-                Monitor.Enter(resubscribeLock);
+                Monitor.Enter(_resubscribeLock);
 
                 // No synchronization context is needed to disable synchronization context.
                 // That enables running asynchronous method not causing deadlocks.
@@ -148,7 +150,7 @@ public sealed class EventStoreReadmodelStreamer
             }
             finally
             {
-                Monitor.Exit(resubscribeLock);
+                Monitor.Exit(_resubscribeLock);
             }
 
             if (resubscribed)
