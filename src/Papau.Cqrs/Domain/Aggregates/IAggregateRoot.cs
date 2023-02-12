@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Papau.Cqrs.Domain.Aggregates
 {
@@ -7,7 +8,7 @@ namespace Papau.Cqrs.Domain.Aggregates
         IAggregateId Id { get; }
         int Version { get; }
         void ClearUncommittedChanges();
-        void ApplyChanges(IEnumerable<IEvent> events);
+        Task ApplyChanges(IAsyncEnumerable<IEvent> changes);
         IReadOnlyList<IEvent> GetUncommittedChanges();
     }
 }

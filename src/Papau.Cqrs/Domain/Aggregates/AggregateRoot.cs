@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Papau.Cqrs.Domain.Aggregates
 {
@@ -9,8 +10,8 @@ namespace Papau.Cqrs.Domain.Aggregates
     /// </summary>
     public abstract class AggregateRoot<TId> : IAggregateRoot where TId : IAggregateId 
     {
-        private List<IEvent> _changes;
-        private Dictionary<Type, Action<IEvent>> _eventConsumerMethods;
+        private readonly List<IEvent> _changes;
+        private readonly Dictionary<Type, Action<IEvent>> _eventConsumerMethods;
         public int Version { get; private set; }
         public TId Id { get; protected set; }
 
@@ -32,12 +33,10 @@ namespace Papau.Cqrs.Domain.Aggregates
             _eventConsumerMethods.Add(typeof(TEvent), e => handler((TEvent) e));
         }
 
-        public void ApplyChanges(IEnumerable<IEvent> events)
+        public async Task ApplyChanges(IAsyncEnumerable<IEvent> events)
         {
-            foreach(var @event in events)
-            {
+            await foreach(var @event in events.ConfigureAwait(false))
                 ApplyChange(@event, false);
-            }
         }
 
         protected void ApplyChange(IEvent @event)
@@ -53,7 +52,8 @@ namespace Papau.Cqrs.Domain.Aggregates
                 .Single();
             
             eventHandlingMethod(@event);
-            if (isNew) _changes.Add(@event);
+            if (isNew) 
+                _changes.Add(@event);
             Version++;
         }
 

@@ -13,49 +13,40 @@ namespace Papau.Cqrs.Domain.Aggregates
 
         public AggregateRepository(IAggregateFactory factory, IEventPublisher publishEndpoint)
         {
-            AggregateFactory = factory ?? throw new System.ArgumentNullException(nameof(factory));
-            PublishEndpoint = publishEndpoint ?? throw new System.ArgumentNullException(nameof(publishEndpoint));
+            AggregateFactory = factory ?? throw new ArgumentNullException(nameof(factory));
+            PublishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
         }
-
-        protected Task<IAggregateRoot> BuildFromHistory(Type aggregateType, string aggregateId, IEnumerable<IEvent> history)
+        protected async Task<IAggregateRoot> BuildFromHistory(Type aggregateType, IAggregateId aggregateId, IAsyncEnumerable<IEvent> history, int expectedVersion)
         {
-            if (history == null || !history.Any())
+            var result = AggregateFactory.CreateAggregate(aggregateType);
+
+            await result.ApplyChanges(history).ConfigureAwait(false);
+
+            if (result.Version == 0)
                 throw new AggregateNotFoundException(aggregateId, typeof(TAggregate));
 
-            var result = AggregateFactory.CreateAggregate(aggregateType);
-            
-            result.ApplyChanges(history);
+            if (expectedVersion < int.MaxValue && result.Version != expectedVersion)
+                throw new AggregateVersionException(aggregateId, typeof(TAggregate), result.Version, expectedVersion);
 
-            return Task.FromResult(result);
+            return result;
         }
-
-        protected Task ApplyChangesToAggregate(IAggregateRoot aggregateRoot, IEnumerable<IEvent> eventsToApply)
-        {
-            aggregateRoot.ApplyChanges(eventsToApply);
-            return Task.CompletedTask;
-        }
-
-        protected async Task<IEnumerable<IEvent>> CommitAndPublish(string aggregateId, IEnumerable<IEvent> existingEvents, IAggregateRoot aggregate)
+        protected async Task<IEnumerable<IEvent>> CommitAndPublish(IAggregateId aggregateId, IEnumerable<IEvent> existingEvents, IAggregateRoot aggregate)
         {
             var uncommittedEvents = aggregate.GetUncommittedChanges();
-            var versionBeforeChanges = aggregate.Version - uncommittedEvents.Count();
+            var versionBeforeChanges = aggregate.Version - uncommittedEvents.Count;
 
-            var currentlySavedVersion = existingEvents?.Count() ?? 0;
+            var currentlySavedVersion = existingEvents.Count();
 
             if (versionBeforeChanges != currentlySavedVersion)
                 throw new AggregateVersionException(aggregateId, typeof(TAggregate), versionBeforeChanges, currentlySavedVersion);
 
             aggregate.ClearUncommittedChanges();
-            await PublishEndpoint.Publish(uncommittedEvents);
+            await PublishEndpoint.Publish(uncommittedEvents).ConfigureAwait(false);
 
             if (versionBeforeChanges == 0)
-            {
                 return uncommittedEvents;
-            }
             else
-            {
                 return existingEvents.Concat(uncommittedEvents);
-            }
         }
 
         public async Task Save(TAggregate aggregateRoot)
@@ -70,13 +61,11 @@ namespace Papau.Cqrs.Domain.Aggregates
 
         protected abstract Task SaveInternal(IAggregateRoot aggregateRoot);
 
-        public abstract Task<IEnumerable<IEvent>> GetAllEvents();
-        
         public abstract Task<IAggregateRoot> GetById(Type aggregateType, IAggregateId aggregateId);
 
         public async Task<TAggregate> GetById(IAggregateId aggregateId)
         {
-            return (TAggregate)(await GetById(typeof(TAggregate), aggregateId));
+            return (TAggregate)await GetById(typeof(TAggregate), aggregateId);
         }
     }
 }
