@@ -6,7 +6,6 @@ using FluentAssertions;
 using NSubstitute;
 
 using Papau.Cqrs.Domain;
-using Papau.Cqrs.Domain.Aggregates;
 using Papau.Cqrs.LiteDb.Domain.Aggregates;
 
 using Xunit;
@@ -20,14 +19,11 @@ public class LiteDbAggregateRepositoryTests
 
     public LiteDbAggregateRepositoryTests()
     {
-        var aggregateFactory = Substitute.For<IAggregateFactory>();
-        aggregateFactory.CreateAggregate(null).ReturnsForAnyArgs(new LiteDbTestAggregate());
-
         var eventPublisher = Substitute.For<IEventPublisher>();
         var stream = new MemoryStream();
         _liteDb = new LiteDB.LiteDatabase(stream);
 
-        _repo = new LiteDbAggregateRepository<LiteDbTestAggregate>(aggregateFactory, eventPublisher, _liteDb);
+        _repo = new LiteDbAggregateRepository<LiteDbTestAggregate>(eventPublisher, _liteDb);
     }
 
     [Fact]

@@ -6,19 +6,18 @@ using System.Threading.Tasks;
 namespace Papau.Cqrs.Domain.Aggregates;
 
 public abstract class AggregateRepository<TAggregate>
-    : IAggregateRepository, IAggregateRepository<TAggregate> where TAggregate : IAggregateRoot
+    : IAggregateRepository, IAggregateRepository<TAggregate> where TAggregate : IAggregateRoot, new()
 {
-    public IAggregateFactory AggregateFactory { get; }
     public IEventPublisher PublishEndpoint { get; }
 
-    public AggregateRepository(IAggregateFactory factory, IEventPublisher publishEndpoint)
+    public AggregateRepository(IEventPublisher publishEndpoint)
     {
-        AggregateFactory = factory ?? throw new ArgumentNullException(nameof(factory));
         PublishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
     }
-    protected async Task<IAggregateRoot> BuildFromHistory(Type aggregateType, IAggregateId aggregateId, IAsyncEnumerable<IEvent> history, int expectedVersion)
+
+    protected async Task<TAggregate> BuildFromHistory(IAggregateId aggregateId, IAsyncEnumerable<IEvent> history, int expectedVersion)
     {
-        var result = AggregateFactory.CreateAggregate(aggregateType);
+        var result = new TAggregate();
 
         await result.ApplyChanges(history).ConfigureAwait(false);
 
@@ -30,6 +29,7 @@ public abstract class AggregateRepository<TAggregate>
 
         return result;
     }
+
     protected async Task<IEnumerable<IEvent>> CommitAndPublish(IAggregateId aggregateId, IEnumerable<IEvent> existingEvents, IAggregateRoot aggregate)
     {
         var uncommittedEvents = aggregate.GetUncommittedChanges();
@@ -61,10 +61,6 @@ public abstract class AggregateRepository<TAggregate>
 
     protected abstract Task SaveInternal(IAggregateRoot aggregateRoot);
 
-    public abstract Task<IAggregateRoot> GetById(Type aggregateType, IAggregateId aggregateId);
+    public abstract Task<TAggregate> GetById(IAggregateId aggregateId);
 
-    public async Task<TAggregate> GetById(IAggregateId aggregateId)
-    {
-        return (TAggregate)await GetById(typeof(TAggregate), aggregateId).ConfigureAwait(false);
-    }
 }

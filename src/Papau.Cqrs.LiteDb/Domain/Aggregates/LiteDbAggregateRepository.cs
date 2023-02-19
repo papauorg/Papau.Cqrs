@@ -11,26 +11,25 @@ using Papau.Cqrs.Domain.Aggregates;
 namespace Papau.Cqrs.LiteDb.Domain.Aggregates;
 
 public class LiteDbAggregateRepository<TAggregate>
-    : AggregateRepository<TAggregate> where TAggregate : IAggregateRoot
+    : AggregateRepository<TAggregate> where TAggregate : IAggregateRoot, new()
 {
     public ILiteDatabase LiteDb { get; }
 
     public LiteDbAggregateRepository(
-        IAggregateFactory factory,
         IEventPublisher publishEndpoint,
-        ILiteDatabase liteDb) : base(factory, publishEndpoint)
+        ILiteDatabase liteDb) : base(publishEndpoint)
     {
         LiteDb = liteDb ?? throw new System.ArgumentNullException(nameof(liteDb));
     }
 
-    public override async Task<IAggregateRoot> GetById(Type aggregateType, IAggregateId aggregateId)
+    public override async Task<TAggregate> GetById(IAggregateId aggregateId)
     {
         var eventCollection = LiteDb.GetCollection("AllEvents");
         var aggregateEvents = eventCollection.Find(Query.EQ("_AggregateId", aggregateId.ToString()));
 
         var typedEvents = Deserialize(aggregateEvents);
 
-        return await BuildFromHistory(aggregateType, aggregateId, typedEvents, int.MaxValue).ConfigureAwait(false);
+        return await BuildFromHistory(aggregateId, typedEvents, int.MaxValue).ConfigureAwait(false);
     }
 
     protected override Task SaveInternal(IAggregateRoot aggregateRoot)
@@ -85,4 +84,5 @@ public class LiteDbAggregateRepository<TAggregate>
     {
         return Type.GetType(typeName, throwOnError: true, ignoreCase: true);
     }
+
 }
