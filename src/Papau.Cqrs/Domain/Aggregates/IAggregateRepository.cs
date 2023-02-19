@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 
 namespace Papau.Cqrs.Domain.Aggregates;
@@ -6,6 +5,4 @@ namespace Papau.Cqrs.Domain.Aggregates;
 public interface IAggregateRepository
 {
     Task Save(IAggregateRoot aggregateRoot);
-
-    Task<IAggregateRoot> GetById(Type aggregateType, IAggregateId aggregateId);
 }

@@ -11,7 +11,7 @@ using Papau.Cqrs.Domain.Aggregates;
 namespace Papau.Cqrs.EventStore;
 
 public class EventStoreRepository<TAggregate>
-    : AggregateRepository<TAggregate> where TAggregate : IAggregateRoot
+    : AggregateRepository<TAggregate> where TAggregate : IAggregateRoot, new()
 {
     public const int READ_PAGE_SIZE = 50;
     public const string AGGREGATE_CLR_TYPE_HEADER = "AggregateClrType";
@@ -20,12 +20,11 @@ public class EventStoreRepository<TAggregate>
     public IEventSerializer EventSerializer { get; }
 
     public EventStoreRepository(
-        IAggregateFactory aggregateFactory,
         IEventPublisher eventPublisher,
         EventStoreClient eventStoreClient,
         IEventSerializer eventSerializer
         )
-        : base(aggregateFactory, eventPublisher)
+        : base(eventPublisher)
     {
         EventStoreClient = eventStoreClient ?? throw new ArgumentNullException(nameof(eventStoreClient));
         EventSerializer = eventSerializer ?? throw new ArgumentNullException(nameof(eventSerializer));
@@ -54,6 +53,10 @@ public class EventStoreRepository<TAggregate>
         return newEvents;
     }
 
+    public override Task<TAggregate> GetById(IAggregateId aggregateId)
+    {
+        return GetById(aggregateId, int.MaxValue);
+    }
 
     protected async Task<TAggregate> GetById(IAggregateId aggregateId, int version)
     {
@@ -74,7 +77,7 @@ public class EventStoreRepository<TAggregate>
             .Take(version)
             .Select(e => EventSerializer.DeserializeEvent(e.OriginalEvent));
 
-        var aggregate = await BuildFromHistory(typeof(TAggregate), aggregateId, domainEvents, version).ConfigureAwait(false);
+        var aggregate = await BuildFromHistory(aggregateId, domainEvents, version).ConfigureAwait(false);
 
         return (TAggregate)aggregate;
     }
@@ -90,8 +93,5 @@ public class EventStoreRepository<TAggregate>
         return $"{type.Name}-{id.ToString()}";
     }
 
-    public override async Task<IAggregateRoot> GetById(Type aggregateType, IAggregateId aggregateId)
-    {
-        return await GetById(aggregateId, int.MaxValue).ConfigureAwait(false);
-    }
+
 }

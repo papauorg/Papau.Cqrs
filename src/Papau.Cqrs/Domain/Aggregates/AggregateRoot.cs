@@ -8,16 +8,18 @@ namespace Papau.Cqrs.Domain.Aggregates;
 /// <summary>
 /// Aggregate root base class
 /// </summary>
-public abstract class AggregateRoot<TId> : IAggregateRoot where TId : IAggregateId
+public abstract class AggregateRoot<TId> : IAggregateRoot 
+    where TId : IAggregateId
 {
     private readonly List<IEvent> _changes;
     private readonly Dictionary<Type, Action<IEvent>> _eventConsumerMethods;
     public int Version { get; private set; }
+
     public TId Id { get; protected set; }
 
-    IAggregateId IAggregateRoot.Id => this.Id;
+    IAggregateId IAggregateRoot.Id => Id;
 
-    public AggregateRoot(TId id)
+    protected AggregateRoot(TId id)
     {
         _changes = new List<IEvent>();
         _eventConsumerMethods = new Dictionary<Type, Action<IEvent>>();
