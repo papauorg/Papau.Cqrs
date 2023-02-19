@@ -5,7 +5,7 @@ using Papau.Cqrs.Domain;
 
 namespace Papau.Cqrs.ReadModels;
 
-public interface IReadModelSubscriber
+public interface IReadModelSubscriber<TEvent> where TEvent : IEvent
 {
-    Task Handle(IEvent e, CancellationToken cancellationToken);
+    Task Handle(TEvent e, CancellationToken cancellationToken);
 }
