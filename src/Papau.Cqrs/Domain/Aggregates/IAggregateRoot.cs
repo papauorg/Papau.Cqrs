@@ -1,13 +1,15 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using Papau.Cqrs.Domain.Entities;
+
 namespace Papau.Cqrs.Domain.Aggregates;
 
 public interface IAggregateRoot
 {
-    IAggregateId Id { get; }
+    IEntityId Id { get; }
     int Version { get; }
     void ClearUncommittedChanges();
-    Task ApplyChanges(IAsyncEnumerable<IEvent> changes);
+    Task LoadFromHistory(IAsyncEnumerable<IEvent> changes);
     IReadOnlyList<IEvent> GetUncommittedChanges();
 }

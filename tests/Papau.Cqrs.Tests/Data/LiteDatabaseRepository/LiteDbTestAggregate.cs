@@ -1,6 +1,7 @@
 using System;
 
 using Papau.Cqrs.Domain.Aggregates;
+using Papau.Cqrs.Domain;
 
 namespace Papau.Cqrs.Tests.Data.LiteDbRepository;
 
@@ -10,19 +11,19 @@ public class LiteDbTestAggregate : AggregateRoot<TestId>
 
     public LiteDbTestAggregate() : base(new TestId(Guid.NewGuid()))
     {
-        Handle<ILiteDbSampleEvent>(SampleEventHandler);
     }
+
+    protected override void Apply(IEvent @event) => Apply(@event as dynamic);
 
     public void AddSampleEvent()
     {
-        ApplyChange(new LiteDbSampleEvent
-        {
+        RaiseEvent<LiteDbSampleEvent>(() => new() {
             Id = Id,
             SomeProp = "someProp"
         });
     }
 
-    private void SampleEventHandler(ILiteDbSampleEvent sampleEvent)
+    private void Apply(LiteDbSampleEvent sampleEvent)
     {
         Id = sampleEvent.Id;
         SampleProperty = sampleEvent.SomeProp;
