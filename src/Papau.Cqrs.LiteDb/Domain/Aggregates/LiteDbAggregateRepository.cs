@@ -7,6 +7,7 @@ using LiteDB;
 
 using Papau.Cqrs.Domain;
 using Papau.Cqrs.Domain.Aggregates;
+using Papau.Cqrs.Domain.Entities;
 
 namespace Papau.Cqrs.LiteDb.Domain.Aggregates;
 
@@ -22,7 +23,7 @@ public class LiteDbAggregateRepository<TAggregate>
         LiteDb = liteDb ?? throw new System.ArgumentNullException(nameof(liteDb));
     }
 
-    public override async Task<TAggregate> GetById(IAggregateId aggregateId)
+    public override async Task<TAggregate> GetById(IEntityId aggregateId)
     {
         var eventCollection = LiteDb.GetCollection("AllEvents");
         var aggregateEvents = eventCollection.Find(Query.EQ("_AggregateId", aggregateId.ToString()));

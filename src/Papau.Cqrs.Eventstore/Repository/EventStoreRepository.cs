@@ -7,6 +7,7 @@ using EventStore.Client;
 
 using Papau.Cqrs.Domain;
 using Papau.Cqrs.Domain.Aggregates;
+using Papau.Cqrs.Domain.Entities;
 
 namespace Papau.Cqrs.EventStore;
 
@@ -53,12 +54,12 @@ public class EventStoreRepository<TAggregate>
         return newEvents;
     }
 
-    public override Task<TAggregate> GetById(IAggregateId aggregateId)
+    public override Task<TAggregate> GetById(IEntityId aggregateId)
     {
         return GetById(aggregateId, int.MaxValue);
     }
 
-    protected async Task<TAggregate> GetById(IAggregateId aggregateId, int version)
+    protected async Task<TAggregate> GetById(IEntityId aggregateId, int version)
     {
         if (version <= 0)
             throw new InvalidOperationException("Cannot get version <= 0");
@@ -77,9 +78,7 @@ public class EventStoreRepository<TAggregate>
             .Take(version)
             .Select(e => EventSerializer.DeserializeEvent(e.OriginalEvent));
 
-        var aggregate = await BuildFromHistory(aggregateId, domainEvents, version).ConfigureAwait(false);
-
-        return (TAggregate)aggregate;
+        return await BuildFromHistory(aggregateId, domainEvents, version).ConfigureAwait(false);
     }
 
     protected override async Task SaveInternal(IAggregateRoot aggregateRoot)
@@ -88,10 +87,8 @@ public class EventStoreRepository<TAggregate>
         await PublishEndpoint.Publish(events).ConfigureAwait(false);
     }
 
-    private static string GetStreamName(IAggregateId id, Type type)
+    private static string GetStreamName(IEntityId id, Type type)
     {
         return $"{type.Name}-{id.ToString()}";
     }
-
-
 }

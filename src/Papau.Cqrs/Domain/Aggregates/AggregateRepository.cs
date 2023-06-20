@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+
+using Papau.Cqrs.Domain.Entities;
 
 namespace Papau.Cqrs.Domain.Aggregates;
 
@@ -15,11 +16,11 @@ public abstract class AggregateRepository<TAggregate>
         PublishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
     }
 
-    protected async Task<TAggregate> BuildFromHistory(IAggregateId aggregateId, IAsyncEnumerable<IEvent> history, int expectedVersion)
+    protected async Task<TAggregate> BuildFromHistory(IEntityId aggregateId, IAsyncEnumerable<IEvent> history, int expectedVersion)
     {
         var result = new TAggregate();
 
-        await result.ApplyChanges(history).ConfigureAwait(false);
+        await result.LoadFromHistory(history).ConfigureAwait(false);
 
         if (result.Version == 0)
             throw new AggregateNotFoundException(aggregateId, typeof(TAggregate));
@@ -28,25 +29,6 @@ public abstract class AggregateRepository<TAggregate>
             throw new AggregateVersionException(aggregateId, typeof(TAggregate), result.Version, expectedVersion);
 
         return result;
-    }
-
-    protected async Task<IEnumerable<IEvent>> CommitAndPublish(IAggregateId aggregateId, IEnumerable<IEvent> existingEvents, IAggregateRoot aggregate)
-    {
-        var uncommittedEvents = aggregate.GetUncommittedChanges();
-        var versionBeforeChanges = aggregate.Version - uncommittedEvents.Count;
-
-        var currentlySavedVersion = existingEvents.Count();
-
-        if (versionBeforeChanges != currentlySavedVersion)
-            throw new AggregateVersionException(aggregateId, typeof(TAggregate), versionBeforeChanges, currentlySavedVersion);
-
-        aggregate.ClearUncommittedChanges();
-        await PublishEndpoint.Publish(uncommittedEvents).ConfigureAwait(false);
-
-        if (versionBeforeChanges == 0)
-            return uncommittedEvents;
-        else
-            return existingEvents.Concat(uncommittedEvents);
     }
 
     public async Task Save(TAggregate aggregateRoot)
@@ -61,6 +43,6 @@ public abstract class AggregateRepository<TAggregate>
 
     protected abstract Task SaveInternal(IAggregateRoot aggregateRoot);
 
-    public abstract Task<TAggregate> GetById(IAggregateId aggregateId);
+    public abstract Task<TAggregate> GetById(IEntityId aggregateId);
 
 }

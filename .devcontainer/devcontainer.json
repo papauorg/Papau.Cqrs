@@ -5,6 +5,13 @@
 
 	"build": {
 		"dockerfile": "devcontainer.docker"
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-dotnettools.csharp"
+			]
+		}
 	}
 
 	// Features to add to the dev container. More info: https://containers.dev/features.

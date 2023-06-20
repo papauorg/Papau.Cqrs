@@ -1,7 +1,9 @@
+using Papau.Cqrs.Domain;
+
 namespace Papau.Cqrs.Tests.Data.LiteDbRepository;
 
-public class LiteDbSampleEvent : ILiteDbSampleEvent
+public record class LiteDbSampleEvent : IEvent
 {
-    public TestId Id { get; set; }
-    public string SomeProp { get; set; }
+    public TestId Id { get; init; }
+    public string SomeProp { get; init; }
 }
